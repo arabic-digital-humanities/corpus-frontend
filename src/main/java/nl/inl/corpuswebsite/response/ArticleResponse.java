@@ -35,6 +35,8 @@ public class ArticleResponse extends BaseResponse {
 	private String articleStylesheet;
 
 	private String metadataStylesheet;
+	
+	private String corpusDataFormat;
 
 
 	public ArticleResponse() {
@@ -44,8 +46,8 @@ public class ArticleResponse extends BaseResponse {
 	@Override
 	public void init(HttpServletRequest request, HttpServletResponse response, MainServlet servlet, String corpus, String contextPathAbsolute, String uriRemainder) throws ServletException {
 		super.init(request, response, servlet, corpus, contextPathAbsolute, uriRemainder);
-		String corpusDataFormat = servlet.getCorpusConfig(corpus).getCorpusDataFormat();
-		articleStylesheet = servlet.getStylesheet(corpus, "article_" + corpusDataFormat + ".xsl");
+		this.corpusDataFormat = servlet.getCorpusConfig(corpus).getCorpusDataFormat();
+		articleStylesheet = servlet.getStylesheet(corpus, "article_" + this.corpusDataFormat + ".xsl");
 		metadataStylesheet = servlet.getStylesheet(corpus, "article_meta.xsl");
 	}
 
@@ -78,6 +80,8 @@ public class ArticleResponse extends BaseResponse {
 				String xmlResult = webservice.makeRequest(parameters);
 				if (xmlResult.contains("NOT_AUTHORIZED")) {
 					context.put("article_content", "");
+				} else if(this.corpusDataFormat.equals("csv")) {
+					context.put("article_content", xmlResult);
 				} else {
 					transformer.clearParameters();
 					transformer.addParameter("contextRoot", servlet.getServletContext().getContextPath());
